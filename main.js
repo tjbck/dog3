@@ -63,7 +63,7 @@ client.on("messageCreate", async (message) => {
       } else {
         const result = await insertMessage(
           message.author.username,
-          message.content
+          messageContent
         );
         console.log(result);
 
