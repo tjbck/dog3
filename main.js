@@ -18,6 +18,7 @@ const client = new Client({
     GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageTyping,
+    GatewayIntentBits.GuildMessageReactions,
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
@@ -48,6 +49,7 @@ client.on("messageCreate", async (message) => {
       messageContent = messageContent.trim();
 
       let item = {
+        id: message.id,
         username: message.author.username,
         message: messageContent,
         metadata: {
@@ -60,19 +62,23 @@ client.on("messageCreate", async (message) => {
         const repliedMessage = await message.channel.messages.fetch(
           message.reference.messageId
         );
+        const reactions = repliedMessage.reactions.cache.map(
+          (reaction) => reaction.emoji.name
+        );
 
         item["replied"] = {
+          id: repliedMessage.id,
           username: repliedMessage.author.username,
           message: repliedMessage.content,
           metadata: {
             channel: repliedMessage.channel.name,
             timestamp: repliedMessage.createdTimestamp,
           },
+          tags: reactions,
         };
       }
 
       const result = await insertMessage(item);
-      console.log(result);
       message.reply("Message saved to database");
     }
   }
