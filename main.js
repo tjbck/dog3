@@ -47,29 +47,34 @@ client.on("messageCreate", async (message) => {
       messageContent = messageContent.replace(`<@${client.user.id}>`, "");
       messageContent = messageContent.trim();
 
+      let item = {
+        username: message.author.username,
+        message: messageContent,
+        metadata: {
+          channel: message.channel.name,
+          timestamp: message.createdTimestamp,
+        },
+      };
+
       if (message.reference) {
         const repliedMessage = await message.channel.messages.fetch(
           message.reference.messageId
         );
 
-        const result = await insertMessage(
-          repliedMessage.author.username,
-          repliedMessage.content,
-          messageContent.split(",").map((tag) => tag.trim())
-        );
-        console.log(result);
-
-        message.reply("Replied message saved to database");
-      } else {
-        const result = await insertMessage(
-          message.author.username,
-          messageContent
-        );
-        console.log(result);
-
-        message.reply("Message saved to database");
+        item["reply"] = {
+          username: repliedMessage.author.username,
+          message: repliedMessage.content,
+          metadata: {
+            channel: repliedMessage.channel.name,
+            timestamp: repliedMessage.createdTimestamp,
+          },
+        };
       }
     }
+
+    const result = await insertMessage(item);
+    console.log(result);
+    message.reply("Message saved to database");
   }
 });
 
