@@ -61,7 +61,7 @@ client.on("messageCreate", async (message) => {
           message.reference.messageId
         );
 
-        item["reply"] = {
+        item["replied"] = {
           username: repliedMessage.author.username,
           message: repliedMessage.content,
           metadata: {
@@ -70,11 +70,11 @@ client.on("messageCreate", async (message) => {
           },
         };
       }
-    }
 
-    const result = await insertMessage(item);
-    console.log(result);
-    message.reply("Message saved to database");
+      const result = await insertMessage(item);
+      console.log(result);
+      message.reply("Message saved to database");
+    }
   }
 });
 
