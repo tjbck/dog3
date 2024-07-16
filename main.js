@@ -31,25 +31,45 @@ client.once(Events.ClientReady, (readyClient) => {
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+
+  console.log(client.user.id);
   console.log(
     `${message.author.username} ${message.author.id}: ${message.content}`
   );
 
   if (message.mentions.has(client.user)) {
-    message.reply("Yes, you mentioned me?");
-  }
+    if (
+      message.member.roles.cache.some(
+        (role) => role.name === "maintainer" || role.name === "contributors"
+      )
+    ) {
+      let messageContent = message.content;
+      messageContent = messageContent.replace(`<@${client.user.id}>`, "");
+      messageContent = messageContent.trim();
 
-  if (
-    message.member.roles.cache.some(
-      (role) => role.name === "maintainer" || role.name === "contributors"
-    )
-  ) {
-    console.log(message.member.roles.cache);
-    const result = await insertMessage(
-      message.author.username,
-      message.content
-    );
-    console.log(result);
+      if (message.reference) {
+        const repliedMessage = await message.channel.messages.fetch(
+          message.reference.messageId
+        );
+
+        const result = await insertMessage(
+          repliedMessage.author.username,
+          repliedMessage.content,
+          messageContent.split(",").map((tag) => tag.trim())
+        );
+        console.log(result);
+
+        message.reply("Replied message saved to database");
+      } else {
+        const result = await insertMessage(
+          message.author.username,
+          message.content
+        );
+        console.log(result);
+
+        message.reply("Message saved to database");
+      }
+    }
   }
 });
 
